@@ -16,12 +16,11 @@ int[,] pecasObjetivo = new int[,]
 
 Tabuleiro tabuleiro = new Tabuleiro(pecasInicial, pecasObjetivo);
 
-List<Tabuleiro> sucessores = tabuleiro.ObterJogadasSucessoras();
+bool encontrouSolucao = tabuleiro.BuscarEmLargura();
 
-Console.WriteLine("Jogadas sucessoras:");
-foreach (var sucessor in sucessores)
+if (!encontrouSolucao)
 {
-    sucessor.ImprimirTabuleiro();
-    Console.WriteLine("Chegou ao objetivo: " + sucessor.EhEstadoObjetivo());
-    Console.WriteLine();
+    Console.WriteLine("Não foi possível encontrar uma solução.");
 }
+
+Console.ReadLine();

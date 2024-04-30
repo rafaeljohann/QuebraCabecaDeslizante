@@ -82,5 +82,35 @@ namespace QuebraCabecaDeslizante.Domain
                 Console.WriteLine();
             }
         }
+
+        public bool BuscarEmLargura()
+        {
+            Queue<Tabuleiro> fila = new Queue<Tabuleiro>();
+            HashSet<Tabuleiro> visitados = new HashSet<Tabuleiro>();
+
+            fila.Enqueue(this);
+            visitados.Add(this);
+
+            while (fila.Count > 0)
+            {
+                Tabuleiro atual = fila.Dequeue();
+                if (atual.EhEstadoObjetivo())
+                {
+                    atual.ImprimirTabuleiro();
+                    return true;
+                }
+
+                foreach (Tabuleiro sucessor in atual.ObterJogadasSucessoras())
+                {
+                    if (!visitados.Contains(sucessor))
+                    {
+                        fila.Enqueue(sucessor);
+                        visitados.Add(sucessor);
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }
