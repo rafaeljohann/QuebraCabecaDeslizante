@@ -85,18 +85,22 @@ namespace QuebraCabecaDeslizante.Domain
 
         public bool BuscarEmLargura()
         {
-            Queue<Tabuleiro> fila = new Queue<Tabuleiro>();
+            Queue<(Tabuleiro tabuleiro, int passos)> fila = new Queue<(Tabuleiro, int)>();
             HashSet<Tabuleiro> visitados = new HashSet<Tabuleiro>();
 
-            fila.Enqueue(this);
+            fila.Enqueue((this, 0));
             visitados.Add(this);
 
             while (fila.Count > 0)
             {
-                Tabuleiro atual = fila.Dequeue();
+                (Tabuleiro atual, int passos) = fila.Dequeue();
+                Console.WriteLine($"Passo {passos}:");
+                atual.ImprimirTabuleiro();
+                Console.WriteLine();
+
                 if (atual.EhEstadoObjetivo())
                 {
-                    atual.ImprimirTabuleiro();
+                    Console.WriteLine($"Chegou ao estado objetivo em {passos} passos.");
                     return true;
                 }
 
@@ -104,13 +108,85 @@ namespace QuebraCabecaDeslizante.Domain
                 {
                     if (!visitados.Contains(sucessor))
                     {
-                        fila.Enqueue(sucessor);
+                        fila.Enqueue((sucessor, passos + 1));
                         visitados.Add(sucessor);
+                    }else {
+                        Console.WriteLine("Aqui");
                     }
                 }
             }
 
+            Console.WriteLine("Não foi possível encontrar o estado objetivo.");
             return false;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            Tabuleiro outroTabuleiro = (Tabuleiro)obj;
+            
+            int tamanho = Pecas.GetLength(0);
+            for (int linha = 0; linha < tamanho; linha++)
+            {
+                for (int coluna = 0; coluna < tamanho; coluna++)
+                {
+                    if (Pecas[linha, coluna] != outroTabuleiro.Pecas[linha, coluna])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                int tamanho = Pecas.GetLength(0);
+                for (int linha = 0; linha < tamanho; linha++)
+                {
+                    for (int coluna = 0; coluna < tamanho; coluna++)
+                    {
+                        hash = hash * 31 + Pecas[linha, coluna];
+                    }
+                }
+                return hash;
+            }
+        }
+
+        // public bool BuscarEmLargura()
+        // {
+        //     Queue<Tabuleiro> fila = new Queue<Tabuleiro>();
+        //     HashSet<Tabuleiro> visitados = new HashSet<Tabuleiro>();
+
+        //     fila.Enqueue(this);
+        //     visitados.Add(this);
+
+        //     while (fila.Count > 0)
+        //     {
+        //         Tabuleiro atual = fila.Dequeue();
+        //         if (atual.EhEstadoObjetivo())
+        //         {
+        //             atual.ImprimirTabuleiro();
+        //             return true;
+        //         }
+
+        //         foreach (Tabuleiro sucessor in atual.ObterJogadasSucessoras())
+        //         {
+        //             if (!visitados.Contains(sucessor))
+        //             {
+        //                 fila.Enqueue(sucessor);
+        //                 visitados.Add(sucessor);
+        //             }
+        //         }
+        //     }
+
+        //     return false;
+        // }
     }
 }
