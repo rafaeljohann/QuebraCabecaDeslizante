@@ -4,6 +4,7 @@ namespace QuebraCabecaDeslizante.Domain
     {
         public int[,] Pecas { get; init; }
         public int[,] PecasObjetivo { get; init; }
+        public int H { get; set; }
 
         public Tabuleiro(int[,] pecas, int[,] pecasObjetivo)
         {
@@ -120,13 +121,51 @@ namespace QuebraCabecaDeslizante.Domain
             return false;
         }
 
+        public Tabuleiro BuscaMelhorEscolha(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
+        {
+            var abertos = new List<Tabuleiro> { initial };
+            var fechados = new HashSet<Tabuleiro>();
+
+            while (abertos.Count > 0)
+            {
+                var X = abertos.First(); // Retira o estado mais à esquerda de abertos
+                abertos.Remove(X);
+
+                if (X.EhEstadoObjetivo())
+                    return X;
+
+                fechados.Add(X);
+
+                foreach (var filho in X.ObterJogadasSucessoras())
+                {
+                    if (!fechados.Contains(filho))
+                    {
+                        var existingOpen = abertos.FirstOrDefault(f => f.Equals(filho));
+                        if (existingOpen == null)
+                        {
+                            filho.H = evaluationFunction(filho); // Atribui ao filho um valor heurístico
+                            abertos.Add(filho); // Adiciona o filho a abertos
+                        }
+                        else if (filho.H < existingOpen.H)
+                        {
+                            existingOpen.H = filho.H; // Atualiza o valor heurístico se um caminho mais curto foi encontrado
+                        }
+                    }
+                }
+
+                abertos = abertos.OrderBy(f => f.H).ToList(); // Reordena estados em aberto pelo mérito heurístico
+            }
+
+            return null; // Retorna FALHA
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
                 return false;
 
             Tabuleiro outroTabuleiro = (Tabuleiro)obj;
-            
+
             int tamanho = Pecas.GetLength(0);
             for (int linha = 0; linha < tamanho; linha++)
             {
@@ -158,35 +197,5 @@ namespace QuebraCabecaDeslizante.Domain
                 return hash;
             }
         }
-
-        // public bool BuscarEmLargura()
-        // {
-        //     Queue<Tabuleiro> fila = new Queue<Tabuleiro>();
-        //     HashSet<Tabuleiro> visitados = new HashSet<Tabuleiro>();
-
-        //     fila.Enqueue(this);
-        //     visitados.Add(this);
-
-        //     while (fila.Count > 0)
-        //     {
-        //         Tabuleiro atual = fila.Dequeue();
-        //         if (atual.EhEstadoObjetivo())
-        //         {
-        //             atual.ImprimirTabuleiro();
-        //             return true;
-        //         }
-
-        //         foreach (Tabuleiro sucessor in atual.ObterJogadasSucessoras())
-        //         {
-        //             if (!visitados.Contains(sucessor))
-        //             {
-        //                 fila.Enqueue(sucessor);
-        //                 visitados.Add(sucessor);
-        //             }
-        //         }
-        //     }
-
-        //     return false;
-        // }
     }
 }
