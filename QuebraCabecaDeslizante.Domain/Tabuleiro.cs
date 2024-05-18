@@ -121,6 +121,46 @@ namespace QuebraCabecaDeslizante.Domain
             return false;
         }
 
+    public Tabuleiro Buscar(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
+    {
+        var abertos = new List<Tabuleiro> { initial };
+        var fechados = new HashSet<Tabuleiro>();
+
+        while (abertos.Count > 0)
+        {
+            var X = abertos.First(); // Retira o estado mais à esquerda de abertos
+            abertos.Remove(X);
+
+            if (X.EhEstadoObjetivo())
+                return X;
+
+            fechados.Add(X);
+
+            foreach (var filho in X.ObterJogadasSucessoras())
+            {
+                if (!fechados.Contains(filho))
+                {
+                    filho.H = evaluationFunction(filho); // Atribui ao filho um valor heurístico
+
+                    var existingOpen = abertos.FirstOrDefault(f => f.Equals(filho));
+                    if (existingOpen == null)
+                    {
+                        abertos.Add(filho); // Adiciona o filho a abertos
+                    }
+                    else if (filho.H < existingOpen.H)
+                    {
+                        abertos.Remove(existingOpen);
+                        abertos.Add(filho); // Atualiza o valor heurístico se um caminho mais curto foi encontrado
+                    }
+                }
+            }
+
+            abertos = abertos.OrderBy(f => f.H).ToList(); // Reordena estados em aberto pelo mérito heurístico
+        }
+
+        return null; // Retorna FALHA
+    }
+
         public Tabuleiro BuscaMelhorEscolha(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
         {
             var abertos = new List<Tabuleiro> { initial };
@@ -138,18 +178,21 @@ namespace QuebraCabecaDeslizante.Domain
 
                 foreach (var filho in X.ObterJogadasSucessoras())
                 {
-                    if (!fechados.Contains(filho))
+                    filho.H = evaluationFunction(filho);
+                    var existeAberto = abertos.FirstOrDefault(f => f.Equals(filho));
+                    var existeFechado = fechados.FirstOrDefault(f => f.Equals(filho));
+                    if (existeFechado is null && existeAberto is null)
                     {
-                        var existingOpen = abertos.FirstOrDefault(f => f.Equals(filho));
-                        if (existingOpen == null)
-                        {
-                            filho.H = evaluationFunction(filho); // Atribui ao filho um valor heurístico
-                            abertos.Add(filho); // Adiciona o filho a abertos
-                        }
-                        else if (filho.H < existingOpen.H)
-                        {
-                            existingOpen.H = filho.H; // Atualiza o valor heurístico se um caminho mais curto foi encontrado
-                        }
+                        abertos.Add(filho);
+                    } 
+                    else if (existeAberto is not null && filho.H < existeAberto.H) 
+                    {
+                        existeAberto.H = filho.H;
+                    }
+                    else if (existeFechado is not null && filho.H < existeFechado.H)
+                    {
+                        fechados.Remove(existeFechado);
+                        abertos.Add(filho);
                     }
                 }
 
