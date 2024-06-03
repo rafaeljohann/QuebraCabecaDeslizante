@@ -86,6 +86,8 @@ namespace QuebraCabecaDeslizante.Domain
 
         public bool BuscarEmLargura()
         {
+            Console.WriteLine("---INICIANDO BUSCA EM LARGURA---");
+            Console.WriteLine("");
             Queue<(Tabuleiro tabuleiro, int passos)> fila = new Queue<(Tabuleiro, int)>();
             HashSet<Tabuleiro> visitados = new HashSet<Tabuleiro>();
 
@@ -121,58 +123,23 @@ namespace QuebraCabecaDeslizante.Domain
             return false;
         }
 
-    public Tabuleiro Buscar(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
-    {
-        var abertos = new List<Tabuleiro> { initial };
-        var fechados = new HashSet<Tabuleiro>();
-
-        while (abertos.Count > 0)
-        {
-            var X = abertos.First(); // Retira o estado mais à esquerda de abertos
-            abertos.Remove(X);
-
-            if (X.EhEstadoObjetivo())
-                return X;
-
-            fechados.Add(X);
-
-            foreach (var filho in X.ObterJogadasSucessoras())
-            {
-                if (!fechados.Contains(filho))
-                {
-                    filho.H = evaluationFunction(filho); // Atribui ao filho um valor heurístico
-
-                    var existingOpen = abertos.FirstOrDefault(f => f.Equals(filho));
-                    if (existingOpen == null)
-                    {
-                        abertos.Add(filho); // Adiciona o filho a abertos
-                    }
-                    else if (filho.H < existingOpen.H)
-                    {
-                        abertos.Remove(existingOpen);
-                        abertos.Add(filho); // Atualiza o valor heurístico se um caminho mais curto foi encontrado
-                    }
-                }
-            }
-
-            abertos = abertos.OrderBy(f => f.H).ToList(); // Reordena estados em aberto pelo mérito heurístico
-        }
-
-        return null; // Retorna FALHA
-    }
-
         public Tabuleiro BuscaMelhorEscolha(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
         {
+            Console.WriteLine("---INICIANDO BUSCA MELHOR ESCOLHA---");
+            Console.WriteLine("");
             var abertos = new List<Tabuleiro> { initial };
             var fechados = new HashSet<Tabuleiro>();
 
             while (abertos.Count > 0)
             {
-                var X = abertos.First(); // Retira o estado mais à esquerda de abertos
+                var X = abertos.First();
                 abertos.Remove(X);
 
                 if (X.EhEstadoObjetivo())
+                {
+                    X.ImprimirTabuleiro();
                     return X;
+                }  
 
                 fechados.Add(X);
 
@@ -196,10 +163,10 @@ namespace QuebraCabecaDeslizante.Domain
                     }
                 }
 
-                abertos = abertos.OrderBy(f => f.H).ToList(); // Reordena estados em aberto pelo mérito heurístico
+                abertos = abertos.OrderBy(f => f.H).ToList();
             }
 
-            return null; // Retorna FALHA
+            return null;
         }
 
         public override bool Equals(object obj)

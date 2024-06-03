@@ -1,4 +1,5 @@
 ﻿using QuebraCabecaDeslizante.Domain;
+using System.Diagnostics;
 
 int[,] pecasInicial = new int[,]
 {
@@ -14,6 +15,12 @@ int[,] pecasObjetivo = new int[,]
     {7, 6, 5}
 };
 
+Stopwatch stopwatch = new Stopwatch();
+stopwatch.Start();
+
+Process process = Process.GetCurrentProcess();
+long memoryBefore = process.PrivateMemorySize64;
+
 Tabuleiro tabuleiro = new Tabuleiro(pecasInicial, pecasObjetivo);
 
 // bool encontrouSolucao = tabuleiro.BuscarEmLargura();
@@ -27,13 +34,11 @@ Func<Tabuleiro, int> heuristicFunction = (state) => {
         for (int j = 0; j < size; j++)
         {
             int valorPeca = state.Pecas[i, j];
-            if (valorPeca != 0) // Ignora a peça vazia
+            if (valorPeca != 0)
             {
-                // Calcula a posição desejada (linha e coluna) da peça com base no seu valor
                 int linhaDesejada = (valorPeca - 1) / size;
                 int colunaDesejada = (valorPeca - 1) % size;
 
-                // Calcula a distância Manhattan entre a posição atual e a posição desejada
                 distanciaManhattan += Math.Abs(i - linhaDesejada) + Math.Abs(j - colunaDesejada);
             }
         }
@@ -44,14 +49,22 @@ Func<Tabuleiro, int> heuristicFunction = (state) => {
 
 Tabuleiro resultado = tabuleiro.BuscaMelhorEscolha(tabuleiro, heuristicFunction);
 
-if (resultado != null)
-{
-    Console.WriteLine("Solução encontrada:");
-    resultado.ImprimirTabuleiro();
-}
-else
-{
-    Console.WriteLine("Não foi possível encontrar uma solução.");
-}
+// if (resultado != null)
+// {
+//     Console.WriteLine("Solução encontrada:");
+//     resultado.ImprimirTabuleiro();
+// }
+// else
+// {
+//     Console.WriteLine("Não foi possível encontrar uma solução.");
+// }
+
+stopwatch.Stop();
+Console.WriteLine("Tempo decorrido: " + stopwatch.ElapsedMilliseconds + " milissegundos");
+
+process = Process.GetCurrentProcess();
+long memoryAfter = process.PrivateMemorySize64;
+long memoryUsed = memoryAfter - memoryBefore;
+Console.WriteLine("Uso de memória: " + memoryUsed + " bytes");
 
 Console.ReadLine();
