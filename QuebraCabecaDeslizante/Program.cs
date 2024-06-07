@@ -1,11 +1,15 @@
 ﻿using QuebraCabecaDeslizante.Domain;
 using System.Diagnostics;
 
+Stopwatch stopwatch = new Stopwatch();
+stopwatch.Start();
+
+Process process = Process.GetCurrentProcess();
+long memoryBefore = process.PrivateMemorySize64;
+
 int[,] pecasInicial = new int[,]
 {
-    {2, 8, 3},
-    {1, 6, 4},
-    {7, 0, 5}
+{2, 3, 4}, {8, 1, 5}, {7, 0, 6}
 };
 
 int[,] pecasObjetivo = new int[,]
@@ -15,49 +19,30 @@ int[,] pecasObjetivo = new int[,]
     {7, 6, 5}
 };
 
-Stopwatch stopwatch = new Stopwatch();
-stopwatch.Start();
-
-Process process = Process.GetCurrentProcess();
-long memoryBefore = process.PrivateMemorySize64;
-
-Tabuleiro tabuleiro = new Tabuleiro(pecasInicial, pecasObjetivo);
-
-// bool encontrouSolucao = tabuleiro.BuscarEmLargura();
-
 Func<Tabuleiro, int> heuristicFunction = (state) => {
-    int distanciaManhattan = 0;
+    int misplacedPieces = 0;
     int size = state.Pecas.GetLength(0);
+    int[,] objetivo = state.PecasObjetivo;
 
     for (int i = 0; i < size; i++)
     {
         for (int j = 0; j < size; j++)
         {
-            int valorPeca = state.Pecas[i, j];
-            if (valorPeca != 0)
+            if (state.Pecas[i, j] != objetivo[i, j] && state.Pecas[i, j] != 0)
             {
-                int linhaDesejada = (valorPeca - 1) / size;
-                int colunaDesejada = (valorPeca - 1) % size;
-
-                distanciaManhattan += Math.Abs(i - linhaDesejada) + Math.Abs(j - colunaDesejada);
+                misplacedPieces++;
             }
         }
     }
 
-    return distanciaManhattan;
+    return misplacedPieces;
 };
 
-Tabuleiro resultado = tabuleiro.BuscaMelhorEscolha(tabuleiro, heuristicFunction);
+Tabuleiro tabuleiro = new Tabuleiro(pecasInicial, pecasObjetivo);
 
-// if (resultado != null)
-// {
-//     Console.WriteLine("Solução encontrada:");
-//     resultado.ImprimirTabuleiro();
-// }
-// else
-// {
-//     Console.WriteLine("Não foi possível encontrar uma solução.");
-// }
+//   bool encontrouSolucao = tabuleiro.BuscarEmLargura();
+ var resultado = tabuleiro.BuscarEmLargura();
+//  var resultado = tabuleiro.BuscaMelhorEscolha(heuristicFunction);
 
 stopwatch.Stop();
 Console.WriteLine("Tempo decorrido: " + stopwatch.ElapsedMilliseconds + " milissegundos");

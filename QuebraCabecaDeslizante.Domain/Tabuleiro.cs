@@ -6,10 +6,13 @@ namespace QuebraCabecaDeslizante.Domain
         public int[,] PecasObjetivo { get; init; }
         public int H { get; set; }
 
+        public List<Tabuleiro> CaminhoPercorrido { get; set; } = new List<Tabuleiro>();
+
         public Tabuleiro(int[,] pecas, int[,] pecasObjetivo)
         {
             Pecas = pecas;
             PecasObjetivo = pecasObjetivo;
+            CaminhoPercorrido.Add(this);
         }
 
         public List<Tabuleiro> ObterJogadasSucessoras()
@@ -52,7 +55,9 @@ namespace QuebraCabecaDeslizante.Domain
             int temp = novoPecas[i, j];
             novoPecas[i, j] = novoPecas[novaPosicaoI, novaPosicaoJ];
             novoPecas[novaPosicaoI, novaPosicaoJ] = temp;
-            return new Tabuleiro(novoPecas, PecasObjetivo);
+            var novoTabuleiro = new Tabuleiro(novoPecas, PecasObjetivo);
+            novoTabuleiro.CaminhoPercorrido.AddRange(this.CaminhoPercorrido);
+            return novoTabuleiro;
         }
 
         public bool EhEstadoObjetivo()
@@ -97,13 +102,27 @@ namespace QuebraCabecaDeslizante.Domain
             while (fila.Count > 0)
             {
                 (Tabuleiro atual, int passos) = fila.Dequeue();
-                Console.WriteLine($"Passo {passos}:");
-                atual.ImprimirTabuleiro();
-                Console.WriteLine();
 
                 if (atual.EhEstadoObjetivo())
                 {
                     Console.WriteLine($"Chegou ao estado objetivo em {passos} passos.");
+                    foreach (var item in atual.CaminhoPercorrido)
+                    {
+                        int numRows = item.Pecas.GetLength(0);
+                        int numCols = item.Pecas.GetLength(1);
+
+                        for (int i = 0; i < numRows; i++)
+                        {
+                            for (int j = 0; j < numCols; j++)
+                            {
+                                Console.Write(item.Pecas[i, j] + " ");
+                            }
+                            Console.WriteLine("");
+                        }
+                        Console.WriteLine("");
+                    }
+                    Console.WriteLine($"Chegou ao estado objetivo com custo {atual.CaminhoPercorrido.Count}.");
+                    Console.WriteLine("Número de estados visitados: " + visitados.Count);
                     return true;
                 }
 
@@ -113,8 +132,6 @@ namespace QuebraCabecaDeslizante.Domain
                     {
                         fila.Enqueue((sucessor, passos + 1));
                         visitados.Add(sucessor);
-                    }else {
-                        Console.WriteLine("Aqui");
                     }
                 }
             }
@@ -123,11 +140,12 @@ namespace QuebraCabecaDeslizante.Domain
             return false;
         }
 
-        public Tabuleiro BuscaMelhorEscolha(Tabuleiro initial, Func<Tabuleiro, int> evaluationFunction)
+
+        public Tabuleiro BuscaMelhorEscolha(Func<Tabuleiro, int> evaluationFunction)
         {
             Console.WriteLine("---INICIANDO BUSCA MELHOR ESCOLHA---");
             Console.WriteLine("");
-            var abertos = new List<Tabuleiro> { initial };
+            var abertos = new List<Tabuleiro> { this };
             var fechados = new HashSet<Tabuleiro>();
 
             while (abertos.Count > 0)
@@ -137,29 +155,48 @@ namespace QuebraCabecaDeslizante.Domain
 
                 if (X.EhEstadoObjetivo())
                 {
-                    X.ImprimirTabuleiro();
+                    foreach (var item in X.CaminhoPercorrido)
+                    {
+                        int numRows = item.Pecas.GetLength(0);
+                        int numCols = item.Pecas.GetLength(1);
+
+                        for (int i = 0; i < numRows; i++)
+                        {
+                            for (int j = 0; j < numCols; j++)
+                            {
+                                Console.Write(item.Pecas[i, j] + " ");
+                            }
+                            Console.WriteLine("");
+                        }
+                        Console.WriteLine("");
+                    }
+                    Console.WriteLine($"Chegou ao estado objetivo com custo {X.CaminhoPercorrido.Count}.");
+                    Console.WriteLine("Número de estados abertos: " + abertos.Count);
                     return X;
-                }  
+                }
 
                 fechados.Add(X);
 
                 foreach (var filho in X.ObterJogadasSucessoras())
                 {
-                    filho.H = evaluationFunction(filho);
-                    var existeAberto = abertos.FirstOrDefault(f => f.Equals(filho));
-                    var existeFechado = fechados.FirstOrDefault(f => f.Equals(filho));
-                    if (existeFechado is null && existeAberto is null)
+                    if (!fechados.Contains(filho))
                     {
-                        abertos.Add(filho);
-                    } 
-                    else if (existeAberto is not null && filho.H < existeAberto.H) 
-                    {
-                        existeAberto.H = filho.H;
-                    }
-                    else if (existeFechado is not null && filho.H < existeFechado.H)
-                    {
-                        fechados.Remove(existeFechado);
-                        abertos.Add(filho);
+                        filho.H = evaluationFunction(filho);
+                        var existeAberto = abertos.FirstOrDefault(f => f.Equals(filho));
+                        var existeFechado = fechados.FirstOrDefault(f => f.Equals(filho));
+                        if (existeFechado is null && existeAberto is null)
+                        {
+                            abertos.Add(filho);
+                        }
+                        else if (existeAberto is not null && filho.H < existeAberto.H)
+                        {
+                            existeAberto.H = filho.H;
+                        }
+                        else if (existeFechado is not null && filho.H < existeFechado.H)
+                        {
+                            fechados.Remove(existeFechado);
+                            abertos.Add(filho);
+                        }
                     }
                 }
 
