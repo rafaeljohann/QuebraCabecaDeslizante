@@ -172,6 +172,7 @@ namespace QuebraCabecaDeslizante.Domain
                     }
                     Console.WriteLine($"Chegou ao estado objetivo com custo {X.CaminhoPercorrido.Count}.");
                     Console.WriteLine("Número de estados abertos: " + abertos.Count);
+                    Console.WriteLine("Número de estados fechados: " + fechados.Count);
                     return X;
                 }
 

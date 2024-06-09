@@ -9,7 +9,7 @@ long memoryBefore = process.PrivateMemorySize64;
 
 int[,] pecasInicial = new int[,]
 {
-{2, 3, 4}, {8, 1, 5}, {7, 0, 6}
+    {2, 1, 3}, {8, 0, 4}, {7, 5, 6}
 };
 
 int[,] pecasObjetivo = new int[,]
@@ -40,9 +40,8 @@ Func<Tabuleiro, int> heuristicFunction = (state) => {
 
 Tabuleiro tabuleiro = new Tabuleiro(pecasInicial, pecasObjetivo);
 
-//   bool encontrouSolucao = tabuleiro.BuscarEmLargura();
- var resultado = tabuleiro.BuscarEmLargura();
-//  var resultado = tabuleiro.BuscaMelhorEscolha(heuristicFunction);
+//  var resultado = tabuleiro.BuscarEmLargura();
+ var resultado = tabuleiro.BuscaMelhorEscolha(heuristicFunction);
 
 stopwatch.Stop();
 Console.WriteLine("Tempo decorrido: " + stopwatch.ElapsedMilliseconds + " milissegundos");
